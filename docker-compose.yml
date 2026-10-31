@@ -1,0 +1,103 @@
+services:
+
+  # ==========================================================
+  # POSTGRESQL + PGVECTOR
+  # ==========================================================
+  postgres:
+    image: pgvector/pgvector:pg16
+    container_name: research-postgres
+
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: advantages
+      POSTGRES_DB: research_agent
+
+    ports:
+      # Windows host : Docker container
+      - "5433:5432"
+
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "pg_isready -U postgres -d research_agent"
+        ]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+    restart: unless-stopped
+
+
+  # ==========================================================
+  # REDIS
+  # ==========================================================
+  redis:
+    image: redis:7
+    container_name: research-redis
+
+    command:
+      - redis-server
+      - --maxmemory
+      - 512mb
+      - --maxmemory-policy
+      - allkeys-lru
+
+    ports:
+      - "6379:6379"
+
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "redis-cli",
+          "ping"
+        ]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+    restart: unless-stopped
+
+
+  # ==========================================================
+  # RABBITMQ
+  # ==========================================================
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: research-rabbitmq
+
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+
+    ports:
+      # AMQP
+      - "5672:5672"
+
+      # RabbitMQ Management UI
+      - "15672:15672"
+
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "rabbitmq-diagnostics",
+          "-q",
+          "ping"
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+    restart: unless-stopped
+
+
+# ============================================================
+# PERSISTENT VOLUMES
+# ============================================================
+volumes:
+  postgres_data:

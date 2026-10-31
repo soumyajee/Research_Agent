@@ -1,0 +1,5 @@
+INGESTION_QUEUE = "research.ingestion"
+RETRIEVAL_QUEUE = "research.retrieval"
+ANALYSIS_QUEUE = "research.analysis"
+REPORT_QUEUE = "research.report"
+DEAD_LETTER_QUEUE = "research.dead_letter"
